@@ -12,7 +12,7 @@
     There are two classes: +1 and -1.
     +1: Means that the wafer is in a working condition and it doesn't need to be replaced.
     -1: Means that the wafer is faulty and it needa to be replaced.
-    
+  
 #### Data Description
     
     The client will send data in multiple sets of files in batches at a given location.
@@ -91,84 +91,6 @@ CMD [ "main.py" ]
 web: gunicorn main:app
 ```
 
-## create a file ".circleci\config.yml" with following content
-```
-version: 2.1
-orbs:
-  heroku: circleci/heroku@1.0.1
-jobs:
-  build-and-test:
-    executor: heroku/default
-    docker:
-      - image: circleci/python:3.6.2-stretch-browsers
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-    steps:
-      - checkout
-      - restore_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-      - run:
-          name: Install Python deps in a venv
-          command: |
-            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-            echo 'export IMAGE_NAME=python-circleci-docker' >> $BASH_ENV
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt
-      - save_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-          paths:
-            - "venv"
-      - run:
-          command: |
-            . venv/bin/activate
-            python -m pytest -v tests/test_script.py
-      - store_artifacts:
-          path: test-reports/
-          destination: tr1
-      - store_test_results:
-          path: test-reports/
-      - setup_remote_docker:
-          version: 19.03.13
-      - run:
-          name: Build and push Docker image
-          command: |
-            docker build -t $DOCKERHUB_USER/$IMAGE_NAME:$TAG .
-            docker login -u $DOCKERHUB_USER -p $DOCKER_HUB_PASSWORD_USER docker.io
-            docker push $DOCKERHUB_USER/$IMAGE_NAME:$TAG
-  deploy:
-    executor: heroku/default
-    steps:
-      - checkout
-      - run:
-          name: Storing previous commit
-          command: |
-            git rev-parse HEAD > ./commit.txt
-      - heroku/install
-      - setup_remote_docker:
-          version: 18.06.0-ce
-      - run:
-          name: Pushing to heroku registry
-          command: |
-            heroku container:login
-            #heroku ps:scale web=1 -a $HEROKU_APP_NAME
-            heroku container:push web -a $HEROKU_APP_NAME
-            heroku container:release web -a $HEROKU_APP_NAME
-
-workflows:
-  build-test-deploy:
-    jobs:
-      - build-and-test
-      - deploy:
-          requires:
-            - build-and-test
-          filters:
-            branches:
-              only:
-                - main
-```
 ## to create requirements.txt
 
 ```buildoutcfg
@@ -186,23 +108,18 @@ git remote add origin <github_url>
 git push -u origin main
 ```
 
-## create a account at circle ci
+## create a account at AWS & Launch AWS Elastic BeanStack Service
 
-<a href="https://circleci.com/login/">Circle CI</a>
+<a href="https://aws.amazon.com/free/?trk=09863622-0e2a-4080-9bba-12d378e294ba&sc_channel=ps&s_kwcid=AL!4422!3!453325184854!e!!g!!create%20aws%20account&ef_id=Cj0KCQiA6rCgBhDVARIsAK1kGPLl4E7ZoYROgjWPIjydpma24S9tUsPAL_szVEdc4-dkfy7_OKrzQS4aAiGJEALw_wcB:G:s&s_kwcid=AL!4422!3!453325184854!e!!g!!create%20aws%20account">AWS Free Tier</a>
 
-## setup your project 
+## setup your project as per Documentation on AWS
 
-<a href="https://app.circleci.com/projects/github/Avnish327030/setup/"> Setup project </a>
+<a href="https://aws.amazon.com/elasticbeanstalk/"> Setup project </a>
 
-## Select project setting in CircleCI and below environment variable
+## Access the Project through web link
 
 ```
-DOCKERHUB_USER
-DOCKER_HUB_PASSWORD_USER
-HEROKU_API_KEY
-HEROKU_APP_NAME
-HEROKU_EMAIL_ADDRESS
-DOCKER_IMAGE_NAME=wafercircle3270303
+http://cdacwafer-env.eba-2s9pyepj.ap-south-1.elasticbeanstalk.com/
 ```
 
 
@@ -214,8 +131,7 @@ git commit -m "proper message"
 git push 
 ```
 
-
-## #docker login -u $DOCKERHUB_USER -p $DOCKER_HUB_PASSWORD_USER docker.io
+## Thank You
 
     
     

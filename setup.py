@@ -6,5 +6,5 @@ setup(
     description="CDAC PG-DBDA ML Project F-Group",
     author="Amitava Gosh", 
     packages=find_packages(),
-    license="Apache License"
+    license="MIT"
 )
